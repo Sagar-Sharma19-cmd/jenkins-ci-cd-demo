@@ -1,0 +1,37 @@
+pipeline {
+    agent any 
+
+    stages {
+        stage('Build') {
+            steps {
+                bat 'dotnet restore' 
+                bat 'dotnet build --configuration Release'
+            }
+        } 
+
+        stage('Test') {
+            steps {
+                bat 'dotnet test --configuration Release'
+            }
+        } 
+
+        stage('Package') {
+            steps {
+                bat 'dotnet pack StudentUtility\\StudentUtility.csproj --configuration Release --no-build --output artifacts'
+            }
+        } 
+
+        stage('Publish Artifact') {
+            steps {
+                archieveArtifacts artifacts: 'artifacts\\*.nupkg', 
+                fingerprint: true
+            }
+        } 
+
+        stage('Deploy') {
+            steps {
+                echo 'Deployment Successful'
+            }
+        } 
+    }
+}
