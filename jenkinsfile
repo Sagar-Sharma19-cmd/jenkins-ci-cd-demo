@@ -1,37 +1,40 @@
 pipeline {
-    agent any 
+    agent any
 
     stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Restore') {
+            steps {
+                sh 'dotnet restore StudentUtility.slnx'
+            }
+        }
+
         stage('Build') {
             steps {
-                bat 'dotnet restore' 
-                bat 'dotnet build --configuration Release'
+                sh 'dotnet build StudentUtility.slnx --no-restore'
             }
-        } 
+        }
 
         stage('Test') {
             steps {
-                bat 'dotnet test --configuration Release'
+                sh 'dotnet test StudentUtility.slnx --no-build'
             }
-        } 
+        }
+    }
 
-        stage('Package') {
-            steps {
-                bat 'dotnet pack StudentUtility\\StudentUtility.csproj --configuration Release --no-build --output artifacts'
-            }
-        } 
+    post {
+        success {
+            echo 'BUILD SUCCESSFUL - All tests passed!'
+        }
 
-        stage('Publish Artifact') {
-            steps {
-                archieveArtifacts artifacts: 'artifacts\\*.nupkg', 
-                fingerprint: true
-            }
-        } 
-
-        stage('Deploy') {
-            steps {
-                echo 'Deployment Successful'
-            }
-        } 
+        failure {
+            echo 'BUILD FAILED - Check the console output.'
+        }
     }
 }
